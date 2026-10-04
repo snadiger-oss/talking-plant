@@ -166,14 +166,19 @@ def test_real_serial_partial_line_over_pseudoterminal():
     master, slave = os.openpty()
     adapter = ArduinoSerialAdapter(os.ttyname(slave))
 
-    def board():
-        payload = (frame() + "\n").encode()
-        os.write(master, b"booting...\n")  # banners are ignored
-        os.write(master, payload[:20])
-        time.sleep(0.15)  # Span pyserial's read timeout, keeping the partial line.
-        os.write(master, payload[20:])
+    done = threading.Event()
 
-    thread = threading.Thread(target=board)
+    def board():
+        # Like the hub sketch, keep sending: connect() clears anything sent before it opened.
+        payload = (frame() + "\n").encode()
+        while not done.is_set():
+            os.write(master, b"booting...\n")  # banners are ignored
+            os.write(master, payload[:20])
+            time.sleep(0.15)  # Span pyserial's read timeout, keeping the partial line.
+            os.write(master, payload[20:])
+            time.sleep(0.1)
+
+    thread = threading.Thread(target=board, daemon=True)
     thread.start()
     try:
         adapter.connect()
@@ -185,6 +190,7 @@ def test_real_serial_partial_line_over_pseudoterminal():
         assert disconnected[1].pressed is None
         assert disconnected[1].session_id == pad.session_id
     finally:
+        done.set()
         adapter.cleanup()
         thread.join(5)
         os.close(master)
