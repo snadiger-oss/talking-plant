@@ -89,8 +89,10 @@ npm --prefix frontend run dev              # 2: open http://localhost:5173 (make
 python -m backend.sensors.bridge --mode arduino-mock --count 24   # 3: simulated Arduino
 ```
 
-The first launch asks for the child's name, the plant's name and type (or a photo
-check), and a ZIP code (typed, or **Use my location**). The simulated Arduino runs a
+The first launch is a 3-step guided setup (You, Your plant, Your garden): the child's
+name, the plant's name and type (or a photo check), and a ZIP code (typed, or **Use my
+location**). A setting on the main page picks how much the plant explains for the
+child's age (5–7, 8–11 or 12–15). The simulated Arduino runs a
 24-second story: dry soil, a pat on the touch sensor, then a watering.
 
 Browsers keep sound and the microphone off until the page is tapped once;
